@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const {uploadImage,reasizeImage,createUser,getSpecificUser,getAllUser,deleteUse,updateUser, profilePhotoChange}=require("../services/userService")
 
 const {createUserValidator,getUserValidator,deleteUserValidator,updateUserValidator}=require("../utils/dummy/validator/userValidator");
+const userModel = require("../model/userModel");
 // const { protect } = require("../services/authService");
 
 const protect = asyncHandler(async (req, res, next) => {
