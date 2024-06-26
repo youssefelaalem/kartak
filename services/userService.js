@@ -17,28 +17,52 @@ const path = require("path");
 const fs = require("fs");
 
 const uploadImage=uploadSingleImage("profileImage")
-const reasizeImage=asyncHandler(async(req,res,next)=>{
-    const fileName=`user-${uuidv4()}-${Date.now()}.jpeg`
-    if(req.file){
-        try{
-            await sharp(req.file.buffer)
-            .toFormat("jpeg")
-            .jpeg({quality:90})
-            .toFile(`uploads/user/${fileName}`)
-        }
-        catch(err){
-            res.json(err)
+// const reasizeImage=asyncHandler(async(req,res,next)=>{
+//     const fileName=`user-${uuidv4()}-${Date.now()}.jpeg`
+//     if(req.file){
+//         try{
+//             await sharp(req.file.buffer)
+//             .toFormat("jpeg")
+//             .jpeg({quality:90})
+//             .toFile(`uploads/user/${fileName}`)
+//         }
+//         catch(err){
+//             res.json(err)
 
-        }
+//         }
         
    
+//     }
+//     req.body.profileImage=fileName
+//     next()
+
+
+
+// })
+const resizeImage = asyncHandler(async (req, res, next) => {
+    const fileName = `user-${uuidv4()}-${Date.now()}.jpeg`;
+
+    if (req.file) {
+        const uploadPath = path.join(__dirname, 'uploads', 'user');
+
+        // Ensure the directory exists
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+
+        try {
+            await sharp(req.file.buffer)
+                .toFormat('jpeg')
+                .jpeg({ quality: 90 })
+                .toFile(path.join(uploadPath, fileName));
+        } catch (err) {
+            return res.status(500).json({ message: err.message });
+        }
     }
-    req.body.profileImage=fileName
-    next()
 
-
-
-})
+    req.body.profileImage = fileName;
+    next();
+});
 const createUser = asyncHandler(async (req, res, next) => {
     req.body.slug = slugify(req.body.name);
     const oldUser = await userModel.findOne({ name: req.body.name });
@@ -69,12 +93,12 @@ const createUser = asyncHandler(async (req, res, next) => {
       publicId: result.public_id,
     };
     const user = await userModel.create(newUser);
-    await user.save();
     if (!user) {
-      res
+        res
         .status(400)
         .json({ status: "faild", message: "faild to create an user" });
     }
+    await user.save();
     const token = createToken(user._id);
   
     res.status(200).json({ status: "success", Data: user, token });
