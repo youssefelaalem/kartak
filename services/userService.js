@@ -80,7 +80,7 @@ const createUser = asyncHandler(async (req, res, next) => {
       __dirname,
       `../uploads/user/${req.body.profileImage}`
     );
-    // console.log("image path :>> ", imagePath);
+    console.log("image path :>> ", imagePath);
     //3.upload ro cloudinary
     const result = await cloudinaryUploadImage(imagePath);
     // console.log("the result",result);
@@ -145,6 +145,48 @@ const updateUser=asyncHandler(async(req,res,next)=>{
 
 
 })
+const profilePhotoChange = asyncHandler(async (req, res) => {
+    //1.valedation
+    if (!req.file) {
+      return res.status(400).json({ message: "no file provided" });
+    }
+    console.log("req.file===>", req.file);
+    //2.get the path of image
+    const imagePath = path.join(
+      __dirname,
+      `../uploads/user/${req.body.profileImage}`
+    );
+    console.log("imagePath",imagePath);
+    //3.upload to cloudinary
+    const result = await cloudinaryUploadImage(imagePath);
+    // console.log("result",result)
+  
+    //4. get hte user from DB
+    const userlogged = await userModel.findById(req.currentUser._id);
+    //  console.log("current user",userlogged);
+    //5.delete the old profile photo if it exists
+    if (userlogged.cloudImage.publicId !== null) {
+      await cloudinaryRemoveImage(userlogged.cloudImage.publicId);
+    }
+    // console.log("before profile photo",userlogged.cloudImage)
+    //6.change the profile photo
+    userlogged.cloudImage = {
+      url: result.secure_url,
+      publicId: result.public_id,
+    };
+    // console.log("after profile photo",userlogged.cloudImage)
+  
+    await userlogged.save();
+    //7.send response to client
+    res
+      .status(200)
+      .json({
+        message: "your profile photo updated successfully",
+        profilePhotoLink: { url: userlogged.cloudImage.url },
+      });
+    //8.Remove the photo from the server
+    fs.unlinkSync(imagePath);
+  });
 
 module.exports={
     uploadImage,
@@ -153,7 +195,7 @@ module.exports={
     getSpecificUser,
     getAllUser,
     deleteUse,
-    updateUser
-    
+    updateUser,
+    profilePhotoChange
 
 }
