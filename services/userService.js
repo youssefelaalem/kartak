@@ -17,52 +17,52 @@ const path = require("path");
 const fs = require("fs");
 
 const uploadImage=uploadSingleImage("profileImage")
-// const reasizeImage=asyncHandler(async(req,res,next)=>{
-//     const fileName=`user-${uuidv4()}-${Date.now()}.jpeg`
-//     if(req.file){
-//         try{
-//             await sharp(req.file.buffer)
-//             .toFormat("jpeg")
-//             .jpeg({quality:90})
-//             .toFile(`uploads/user/${fileName}`)
-//         }
-//         catch(err){
-//             res.json(err)
+const reasizeImage=asyncHandler(async(req,res,next)=>{
+    const fileName=`user-${uuidv4()}-${Date.now()}.jpeg`
+    if(req.file){
+        try{
+            await sharp(req.file.buffer)
+            .toFormat("jpeg")
+            .jpeg({quality:90})
+            .toFile(`uploads/user/${fileName}`)
+        }
+        catch(err){
+            res.json(err)
 
-//         }
+        }
         
    
-//     }
-//     req.body.profileImage=fileName
-//     next()
-
-
-
-// })
-const reasizeImage = asyncHandler(async (req, res, next) => {
-    const fileName = `user-${uuidv4()}-${Date.now()}.jpeg`;
-
-    if (req.file) {
-        const uploadPath = path.join(__dirname, 'uploads', 'user');
-
-        // Ensure the directory exists
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-
-        try {
-            await sharp(req.file.buffer)
-                .toFormat('jpeg')
-                .jpeg({ quality: 90 })
-                .toFile(path.join(uploadPath, fileName));
-        } catch (err) {
-            return res.status(500).json({ message: err.message });
-        }
     }
+    req.body.profileImage=fileName
+    next()
 
-    req.body.profileImage = fileName;
-    next();
-});
+
+
+})
+// const reasizeImage = asyncHandler(async (req, res, next) => {
+//     const fileName = `user-${uuidv4()}-${Date.now()}.jpeg`;
+
+//     if (req.file) {
+//         const uploadPath = path.join(__dirname, 'uploads', 'user');
+// console.log(".......? ",uploadPath);
+//         // Ensure the directory exists
+//         if (!fs.existsSync(uploadPath)) {
+//             fs.mkdirSync(uploadPath, { recursive: true });
+//         }
+
+//         try {
+//             await sharp(req.file.buffer)
+//                 .toFormat('jpeg')
+//                 .jpeg({ quality: 90 })
+//                 .toFile(path.join(uploadPath, fileName));
+//         } catch (err) {
+//             return res.status(500).json({ message: err.message });
+//         }
+//     }
+
+//     req.body.profileImage = fileName;
+//     next();
+// });
 const createUser = asyncHandler(async (req, res, next) => {
     req.body.slug = slugify(req.body.name);
     const oldUser = await userModel.findOne({ name: req.body.name });
@@ -83,7 +83,7 @@ const createUser = asyncHandler(async (req, res, next) => {
     console.log("image path :>> ", imagePath);
     //3.upload ro cloudinary
     const result = await cloudinaryUploadImage(imagePath);
-    // console.log("the result",result);
+    console.log("the result",result);
     //create object of new place to update (url,publicId)
     const newUser = new userModel(req.body);
   
@@ -146,6 +146,8 @@ const updateUser=asyncHandler(async(req,res,next)=>{
 
 })
 const profilePhotoChange = asyncHandler(async (req, res) => {
+
+  console.log("Cdscsdcsdcdscsdcsdc");
     //1.valedation
     if (!req.file) {
       return res.status(400).json({ message: "no file provided" });
@@ -159,11 +161,11 @@ const profilePhotoChange = asyncHandler(async (req, res) => {
     console.log("imagePath",imagePath);
     //3.upload to cloudinary
     const result = await cloudinaryUploadImage(imagePath);
-    // console.log("result",result)
+    console.log("result",result)
   
     //4. get hte user from DB
     const userlogged = await userModel.findById(req.currentUser._id);
-    //  console.log("current user",userlogged);
+     console.log("current user",userlogged);
     //5.delete the old profile photo if it exists
     if (userlogged.cloudImage.publicId !== null) {
       await cloudinaryRemoveImage(userlogged.cloudImage.publicId);

@@ -26,6 +26,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start":"nodemon server.js",
     "dev": " SET NODE_ENV=development& node --watch server.js",
     "prod": "SET NODE_ENV=production& nodemon server.js"
   },
