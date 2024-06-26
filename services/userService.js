@@ -39,7 +39,7 @@ const uploadImage=uploadSingleImage("profileImage")
 
 
 // })
-const resizeImage = asyncHandler(async (req, res, next) => {
+const reasizeImage = asyncHandler(async (req, res, next) => {
     const fileName = `user-${uuidv4()}-${Date.now()}.jpeg`;
 
     if (req.file) {
